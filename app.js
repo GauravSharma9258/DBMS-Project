@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const app = express();
 const passport = require("passport");
 const flash = require("connect-flash");
@@ -18,6 +19,7 @@ require("./config/passport.js")(passport);
 
 
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.urlencoded({ extended: true }));
