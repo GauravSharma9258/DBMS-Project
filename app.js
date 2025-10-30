@@ -20,6 +20,10 @@ require("./config/passport.js")(passport);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+// Required when running behind a proxy (e.g., Vercel) so secure cookies work
+if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+	app.set("trust proxy", 1);
+}
 app.use(expressLayouts);
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.urlencoded({ extended: true }));
