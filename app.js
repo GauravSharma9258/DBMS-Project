@@ -3,6 +3,7 @@ const app = express();
 const passport = require("passport");
 const flash = require("connect-flash");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const expressLayouts = require("express-ejs-layouts");
 const methodOverride = require("method-override");
 const homeRoutes = require("./routes/home.js");
@@ -21,10 +22,20 @@ app.use(expressLayouts);
 app.use("/assets", express.static(__dirname + "/assets"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+// Sessions: use Mongo-backed store in production (MemoryStore only for local dev)
 app.use(session({
-	secret: "secret",
-	resave: true,
-	saveUninitialized: true
+	secret: process.env.SESSION_SECRET || "secret",
+	resave: false,
+	saveUninitialized: false,
+	store: process.env.MONGO_URI ? MongoStore.create({
+		mongoUrl: process.env.MONGO_URI,
+		collectionName: "sessions"
+	}) : undefined,
+	cookie: {
+		secure: process.env.NODE_ENV === "production",
+		sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
+		maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+	}
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -52,4 +63,9 @@ app.use((req,res) => {
 
 
 const port = process.env.PORT || 5000;
-app.listen(port, console.log(`Server is running at http://localhost:${port}`));
+if (process.env.VERCEL) {
+	// Export the app for Vercel serverless environment
+	module.exports = app;
+} else {
+	app.listen(port, () => console.log(`Server is running at http://localhost:${port}`));
+}
