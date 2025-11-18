@@ -12,6 +12,7 @@ const authRoutes = require("./routes/auth.js");
 const adminRoutes = require("./routes/admin.js");
 const donorRoutes = require("./routes/donor.js");
 const agentRoutes = require("./routes/agent.js");
+const apiRoutes = require("./routes/api.js");
 require("dotenv").config();
 require("./config/dbConnection.js")();
 require("./config/passport.js")(passport);
@@ -26,6 +27,7 @@ if (process.env.VERCEL || process.env.NODE_ENV === "production") {
 }
 app.use(expressLayouts);
 app.use("/assets", express.static(__dirname + "/assets"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // Sessions: use Mongo-backed store in production (MemoryStore only for local dev)
@@ -63,6 +65,7 @@ app.use(authRoutes);
 app.use(donorRoutes);
 app.use(adminRoutes);
 app.use(agentRoutes);
+app.use(apiRoutes);
 app.use((req,res) => {
 	res.status(404).render("404page", { title: "Page not found" });
 });

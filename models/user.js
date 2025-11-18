@@ -22,7 +22,32 @@ const userSchema = new mongoose.Schema({
 		enum: ["male", "female"]
 	},
 	address: String,
-	phone: Number,
+	phone: String,
+	restaurantName: String,
+	restaurantAddress: String,
+	restaurantPhone: String,
+	ownerName: String,
+	licenseNumber: String,
+	licenseImagePath: String,
+	restaurantPhotos: [String],
+	latitude: {
+		type: Number,
+		min: -90,
+		max: 90
+	},
+	longitude: {
+		type: Number,
+		min: -180,
+		max: 180
+	},
+	verificationStatus: {
+		type: String,
+		enum: ["pending", "approved", "rejected", "not_required"],
+		default: function () {
+			return (this.role === "donor" || this.role === "agent") ? "pending" : "not_required";
+		}
+	},
+	verificationNotes: String,
 	joinedTime: {
 		type: Date,
 		default: Date.now

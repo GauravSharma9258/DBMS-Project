@@ -1,0 +1,53 @@
+<main>
+	<%- include('../partials/donorSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3">
+			<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+			<h5 class="m-0 color-theme d-inline-block">Verification Status</h5>
+		</div>
+
+		<div class="col col-lg-8 col-12 m-auto my-4">
+			<div class="card shadow-sm border-0">
+				<div class="card-body">
+					<h4 class="card-title mb-3"><%= currentUser.restaurantName || 'Your restaurant' %></h4>
+					<p class="mb-1"><strong>Owner:</strong> <%= currentUser.ownerName || currentUser.firstName + ' ' + currentUser.lastName %></p>
+					<p class="mb-1"><strong>Submitted on:</strong> <%= currentUser.joinedTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></p>
+					
+					<div class="my-3">
+						<span class="badge fs-6 px-3 py-2
+							<%= currentUser.verificationStatus === 'approved' ? 'bg-success' : currentUser.verificationStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark' %>">
+							Current status: <%= currentUser.verificationStatus %>
+						</span>
+					</div>
+
+					<% if (currentUser.verificationStatus === 'pending') { %>
+						<p class="text-muted">Our admin team is reviewing your documents. We typically verify restaurants within 24-48 hours.</p>
+					<% } else if (currentUser.verificationStatus === 'approved') { %>
+						<p class="text-success">Great news! You can now start posting donation requests from your dashboard.</p>
+					<% } else if (currentUser.verificationStatus === 'rejected') { %>
+						<div class="alert alert-danger">
+							<p class="mb-2">Unfortunately, we couldn't verify your restaurant.</p>
+							<% if (currentUser.verificationNotes) { %>
+								<p class="mb-1"><strong>Reason:</strong> <%= currentUser.verificationNotes %></p>
+							<% } %>
+							<p class="mb-0">Please contact support or resubmit correct documents.</p>
+						</div>
+					<% } %>
+
+					<div class="mt-4">
+						<h5>What happens next?</h5>
+						<ul>
+							<li>While pending, you can browse your dashboard but cannot post donations.</li>
+							<li>Once approved, the Donate option becomes available instantly.</li>
+							<li>Need updates? Reach us at <a href="mailto:support@foodaid.org">support@foodaid.org</a>.</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</main>
+

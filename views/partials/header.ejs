@@ -1,16 +1,23 @@
 <header>
 	<nav class="navbar navbar-expand-sm navbar-light p-0 h-100">
-		<div class="container-fluid p-0">
-			<a class="navbar-brand text-white ps-2" href="/">Food Aid</a>
+		<div class="container-fluid px-3">
+			<a class="navbar-brand ps-1" href="/">
+				<span class="navbar-brand-icon">🍽️</span>
+				<span>SharePlate+</span>
+			</a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
 				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-				<span><i class="fas fa-bars text-white"></i></span>
+				<span><i class="fas fa-bars text-dark"></i></span>
 			</button>
 			<div class="collapse navbar-collapse ps-2" id="navbarSupportedContent" style="z-index: 100;">
-				<ul class="navbar-nav ms-auto me-3">
-					<li class="nav-item"><a class="nav-link" href="/home/about-us">About us</a></li>
-					<li class="nav-item"><a class="nav-link" href="/home/mission">Our mission</a></li>
-					<li class="nav-item"><a class="nav-link" href="/home/contact-us">Contact us</a></li>
+				<ul class="navbar-nav ms-auto me-2 align-items-center">
+					<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+					<% if(!currentUser || !currentUser._id) { %>
+						<li class="nav-item"><a class="nav-link" href="/donor/donate">Donate</a></li>
+						<li class="nav-item"><a class="nav-link" href="/donor/donations/pending">Track</a></li>
+						<li class="nav-item"><a class="nav-link" href="/home/about-us">NGOs</a></li>
+					<% } %>
+					<li class="nav-item"><a class="nav-link" href="/home/contact-us">Contact</a></li>
 					<% if(currentUser && currentUser._id) { %>
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -22,7 +29,11 @@
 						</li>
 					<% } else { %>
 						<li class="nav-item"><a class="nav-link" href="/auth/login">Login</a></li>
-						<li class="nav-item"><a class="nav-link" href="/auth/signup">Signup</a></li>
+						<li class="nav-item ms-1">
+							<a class="nav-link btn btn-sm sp-pill px-3" href="/auth/signup" style="color:#fff !important;">
+								Sign up
+							</a>
+						</li>
 					<% } %>
 				</ul>
 			</div>

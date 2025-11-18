@@ -30,6 +30,21 @@ const donationSchema = new mongoose.Schema({
 		type: Number,
 		required: true
 	},
+	latitude: {
+		type: Number,
+		min: -90,
+		max: 90
+	},
+	longitude: {
+		type: Number,
+		min: -180,
+		max: 180
+	},
+	expiryTime: {
+		type: Date,
+		required: true
+	},
+	donationPhotos: [String],
 	donorToAdminMsg: String,
 	adminToAgentMsg: String,
 	collectionTime: {
@@ -37,10 +52,32 @@ const donationSchema = new mongoose.Schema({
 	},
 	status: {
 		type: String,
-		enum: ["pending", "rejected", "accepted", "assigned", "collected"],
+		enum: ["pending", "rejected", "assigned", "picked_up", "collected"],
 		required: true
 	},
-});
+	candidateAgents: [{
+		agent: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "users"
+		},
+		status: {
+			type: String,
+			enum: ["pending", "accepted", "declined"],
+			default: "pending"
+		},
+		distanceKm: Number,
+		respondedAt: Date
+	}],
+	pickupConfirmedAt: Date,
+	proofs: [String],
+	proofNotes: String,
+	autoAssignmentRunAt: Date,
+	assignmentMethod: {
+		type: String,
+		enum: ["auto", "manual"],
+		default: "auto"
+	}
+}, { timestamps: true });
 
 const Donation = mongoose.model("donations", donationSchema);
 module.exports = Donation;

@@ -1,11 +1,25 @@
 <div id="sidebar">
 	<ul id="sidebar-nav">
 		<li>Welcome <%= currentUser.firstName %></li>
+		<% const donorVerificationStatus = currentUser.verificationStatus || 'approved'; %>
+		<% const donorVerified = donorVerificationStatus === 'approved'; %>
+		<% if (!donorVerified) { %>
+			<li class="text-warning">Status: <%= donorVerificationStatus %></li>
+		<% } %>
 		<li><a href="/donor/dashboard">Dashboard</a></li>
-		<li><a href="/donor/donate">Donate</a></li>
+		<li>
+			<% if (donorVerified) { %>
+				<a href="/donor/donate">Donate</a>
+			<% } else { %>
+				<span class="text-muted">Donate (locked)</span>
+			<% } %>
+		</li>
 		<li><a href="/donor/donations/pending">My Pending Donations</a></li>
+		<li><a href="/donor/track">Track Donations</a></li>
+		<li><a href="/donor/proofs">Photo Proofs</a></li>
 		<li><a href="/donor/donations/previous">My Previous Donations</a></li>
 		<li><a href="/donor/profile">My Profile</a></li>
+		<li><a href="/donor/verification">Verification Status</a></li>
 		<li><a href="/auth/logout" class="btn">Logout</a></li>
 	</ul>
 </div>

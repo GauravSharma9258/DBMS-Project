@@ -8,32 +8,81 @@
 			<h5 class="m-0 color-theme d-inline-block">Pending Collections</h5>
 		</div>
 		
-		<div class="col col-sm-10 col-12 m-auto my-4" style="max-height: 75%; overflow: auto;">
-			<table class="table table-info table-striped table-hover m-0 bg-white">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Donor name</th>
-						<th scope="col">Address to collect</th>
-						<th scope="col">Phone</th>
-						<th scope="col">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					<% for(let i=0; i<pendingCollections.length; i++) { %>
-						<tr>
-							<th scope="row"> <%= i+1 %> </th>
-							<td> <%= pendingCollections[i].donor.firstName + " " + pendingCollections[i].donor.lastName %> </td>
-							<td> <%= pendingCollections[i].address %> </td>
-							<td> <%= pendingCollections[i].phone %> </td>
-							<td>
-								<a href="/agent/collection/view/<%= pendingCollections[i]._id %>" class="btn">View</a>
-								<a href="/agent/collection/collect/<%= pendingCollections[i]._id %>" class="btn">Collect</a>
-							</td>
-						</tr>
-					<% } %>
-				</tbody>
-			</table>
+		<div class="m-4">
+			<div class="bg-white p-4 mb-4 shadow-sm rounded">
+				<h5>Donation invitations</h5>
+				<% if(invites && invites.length) { %>
+					<% invites.forEach((invite, idx) => { %>
+						<div class="border rounded p-3 mb-3">
+							<div class="fw-semibold mb-1"><%= invite.donor.firstName + " " + invite.donor.lastName %></div>
+							<small class="text-muted d-block mb-2"><%= invite.address %></small>
+							<div><strong>Food:</strong> <%= invite.foodType %> | <strong>Quantity:</strong> <%= invite.quantity %></div>
+							<div><strong>Cooked at:</strong> <%= invite.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></div>
+							<div><strong>Safe to eat until:</strong> <%= invite.expiryTime ? invite.expiryTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) : "Not provided" %></div>
+
+							<% if(invite.donationPhotos && invite.donationPhotos.length) { %>
+								<div class="d-flex flex-wrap gap-2 mt-3 proof-gallery">
+									<% invite.donationPhotos.forEach(photo => { %>
+										<a href="<%= photo %>" target="_blank"><img src="<%= photo %>" alt="Meal photo"></a>
+									<% }) %>
+								</div>
+								<small class="text-muted d-block mt-1">Preview the meal before accepting.</small>
+							<% } %>
+							<div class="mt-3 d-flex gap-2 flex-wrap">
+								<form action="/agent/collections/respond/<%= invite._id %>" method="POST">
+									<input type="hidden" name="action" value="accept">
+									<button type="submit" class="btn btn-success btn-sm">Accept</button>
+								</form>
+								<form action="/agent/collections/respond/<%= invite._id %>" method="POST">
+									<input type="hidden" name="action" value="decline">
+									<button type="submit" class="btn btn-outline-secondary btn-sm">Decline</button>
+								</form>
+							</div>
+						</div>
+					<% }) %>
+				<% } else { %>
+					<p class="text-muted m-0">No pending invitations right now. We'll notify you when a nearby donor requests a pickup.</p>
+				<% } %>
+			</div>
+
+			<div class="bg-white p-4 shadow-sm rounded">
+				<h5 class="mb-3">Assigned to you</h5>
+				<div style="max-height: 400px; overflow:auto;">
+					<table class="table table-info table-striped table-hover m-0 bg-white">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Donor name</th>
+								<th scope="col">Address to collect</th>
+								<th scope="col">Phone</th>
+								<th scope="col">Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% if(pendingCollections && pendingCollections.length) { %>
+								<% for(let i=0; i<pendingCollections.length; i++) { %>
+									<tr>
+										<th scope="row"> <%= i+1 %> </th>
+										<td> <%= pendingCollections[i].donor.firstName + " " + pendingCollections[i].donor.lastName %> </td>
+										<td> <%= pendingCollections[i].address %> </td>
+										<td> <%= pendingCollections[i].phone %> </td>
+										<td>
+											<a href="/agent/collection/view/<%= pendingCollections[i]._id %>" class="btn btn-sm btn-outline-primary">View</a>
+											<% if(pendingCollections[i].status === "assigned" || pendingCollections[i].status === "picked_up") { %>
+												<a href="/agent/collection/collect/<%= pendingCollections[i]._id %>" class="btn btn-sm btn-success">Mark collected</a>
+											<% } %>
+										</td>
+									</tr>
+								<% } %>
+							<% } else { %>
+								<tr>
+									<td colspan="5" class="text-center text-muted py-3">No assigned pickups yet.</td>
+								</tr>
+							<% } %>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 		
 		

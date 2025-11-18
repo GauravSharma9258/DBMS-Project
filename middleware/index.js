@@ -30,6 +30,17 @@ const middleware = {
 			req.flash("warning", "This route is allowed for donor only!!");
 			return res.redirect("back");
 		}
+		res.locals.donorVerificationStatus = req.user.verificationStatus;
+		next();
+	},
+
+	ensureVerifiedDonor: (req, res, next) => {
+		if (!req.user || req.user.role !== "donor") return next();
+		const status = req.user.verificationStatus || "approved";
+		if (status !== "approved") {
+			req.flash("warning", "Your restaurant is not verified yet. Please wait for admin approval.");
+			return res.redirect("/donor/verification");
+		}
 		next();
 	},
 	
@@ -42,6 +53,17 @@ const middleware = {
 		if(req.user.role != "agent") {
 			req.flash("warning", "This route is allowed for agent only!!");
 			return res.redirect("back");
+		}
+		res.locals.agentVerificationStatus = req.user.verificationStatus;
+		next();
+	},
+
+	ensureVerifiedAgent: (req, res, next) => {
+		if (!req.user || req.user.role !== "agent") return next();
+		const status = req.user.verificationStatus || "approved";
+		if (status !== "approved") {
+			req.flash("warning", "Your NGO account is not verified yet. Please wait for admin approval.");
+			return res.redirect("/agent/verification");
 		}
 		next();
 	},

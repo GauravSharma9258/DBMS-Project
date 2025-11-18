@@ -1,0 +1,65 @@
+<main>
+	<%- include('../partials/adminSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+			<div>
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme d-inline-block">Restaurants</h5>
+			</div>
+			<div class="d-flex gap-2">
+				<span class="badge bg-warning text-dark">Pending: <%= stats.pending %></span>
+				<span class="badge bg-success">Approved: <%= stats.approved %></span>
+				<span class="badge bg-danger">Rejected: <%= stats.rejected %></span>
+			</div>
+		</div>
+		
+		<div class="col col-12 m-auto my-4">
+			<div class="table-responsive bg-white shadow-sm rounded">
+				<table class="table table-hover align-middle m-0">
+					<thead class="table-light">
+						<tr>
+							<th scope="col">Restaurant</th>
+							<th scope="col">Owner</th>
+							<th scope="col">Submitted on</th>
+							<th scope="col">Status</th>
+							<th scope="col">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% if (restaurants.length === 0) { %>
+							<tr>
+								<td colspan="5" class="text-center py-4 text-muted">No restaurants found.</td>
+							</tr>
+						<% } else { %>
+							<% restaurants.forEach((restaurant) => { %>
+								<tr>
+									<td>
+										<div class="fw-semibold"><%= restaurant.restaurantName || 'N/A' %></div>
+										<small class="text-muted"><%= restaurant.restaurantAddress || '—' %></small>
+									</td>
+									<td>
+										<div><%= restaurant.ownerName || (restaurant.firstName + ' ' + restaurant.lastName) %></div>
+										<small class="text-muted"><%= restaurant.email %></small>
+									</td>
+									<td><%= restaurant.joinedTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></td>
+									<td>
+										<span class="badge <%= restaurant.verificationStatus === 'approved' ? 'bg-success' : restaurant.verificationStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark' %>">
+											<%= restaurant.verificationStatus %>
+										</span>
+									</td>
+									<td>
+										<a href="/admin/restaurants/<%= restaurant._id %>" class="btn btn-sm btn-outline-primary">Review</a>
+									</td>
+								</tr>
+							<% }) %>
+						<% } %>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
+	</div>
+</main>
+

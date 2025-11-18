@@ -1,0 +1,128 @@
+<main>
+	<%- include('../partials/adminSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+			<div>
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme d-inline-block">NGO Review</h5>
+			</div>
+			<a href="/admin/ngos" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back to list</a>
+		</div>
+
+		<div class="col col-12 col-lg-10 m-auto my-4">
+			<div class="row g-4">
+				<div class="col-lg-8">
+					<div class="card shadow-sm border-0">
+						<div class="card-body">
+							<h4 class="card-title mb-0"><%= ngo.restaurantName || 'NGO' %></h4>
+							<p class="text-muted mb-3"><%= ngo.restaurantAddress || 'Address not provided' %></p>
+							
+							<div class="mb-3">
+								<strong>Contact:</strong> <%= ngo.ownerName || ngo.firstName + ' ' + ngo.lastName %><br>
+								<strong>Email:</strong> <%= ngo.email %><br>
+								<strong>Phone:</strong> <%= ngo.restaurantPhone || ngo.phone || 'N/A' %><br>
+								<strong>Registration / License #:</strong> <%= ngo.licenseNumber || 'N/A' %>
+							</div>
+
+							<% if (ngo.licenseImagePath) { %>
+								<div class="mb-3">
+									<h6>License / registration document</h6>
+									<img src="<%= ngo.licenseImagePath %>" alt="License" class="img-fluid rounded border" style="max-height: 260px; object-fit: contain;">
+								</div>
+							<% } %>
+
+							<% if (ngo.restaurantPhotos && ngo.restaurantPhotos.length) { %>
+								<div class="mb-3">
+									<h6>NGO photos</h6>
+									<div class="d-flex flex-wrap gap-2">
+										<% ngo.restaurantPhotos.forEach(photo => { %>
+											<img src="<%= photo %>" alt="NGO photo" class="rounded border" style="width: 140px; height: 100px; object-fit: cover;">
+										<% }) %>
+									</div>
+								</div>
+							<% } %>
+
+							<% if (ngo.latitude && ngo.longitude) { %>
+								<div class="mb-3">
+									<h6>Map location</h6>
+									<div id="ngo-map"></div>
+								</div>
+							<% } %>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<div class="card shadow-sm border-0">
+						<div class="card-body">
+							<h5>Verification</h5>
+							<p>
+								Current status:
+								<span class="badge <%= ngo.verificationStatus === 'approved' ? 'bg-success' : ngo.verificationStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark' %>">
+									<%= ngo.verificationStatus %>
+								</span>
+							</p>
+
+							<% if (ngo.verificationNotes) { %>
+								<div class="alert alert-info">
+									<strong>Notes:</strong>
+									<p class="mb-0"><%= ngo.verificationNotes %></p>
+								</div>
+							<% } %>
+
+							<form action="/admin/ngos/<%= ngo._id %>/verify" method="POST" class="mb-3">
+								<input type="hidden" name="status" value="approved">
+								<div class="mb-3">
+									<label for="approve-notes" class="form-label">Message to NGO (optional)</label>
+									<textarea name="notes" id="approve-notes" class="form-control" rows="2" placeholder="Optional note to include with approval"></textarea>
+								</div>
+								<button type="submit" class="btn btn-success w-100">Approve</button>
+							</form>
+
+							<form action="/admin/ngos/<%= ngo._id %>/verify" method="POST">
+								<input type="hidden" name="status" value="rejected">
+								<div class="mb-3">
+                                    <label for="reject-notes" class="form-label">Reason for rejection</label>
+									<textarea name="notes" id="reject-notes" class="form-control" rows="3" placeholder="Explain why verification failed" required></textarea>
+								</div>
+								<button type="submit" class="btn btn-outline-danger w-100">Reject</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</main>
+
+<% if (ngo.latitude && ngo.longitude) { %>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	<style>
+		#ngo-map {
+			width: 100%;
+			height: 280px;
+			border-radius: 10px;
+			border: 1px solid #e0e0e0;
+		}
+	</style>
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const map = L.map("ngo-map", {
+				minZoom: 4,
+				maxZoom: 18
+			}).setView([<%= ngo.latitude %>, <%= ngo.longitude %>], 14);
+
+			L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(map);
+
+			L.marker([<%= ngo.latitude %>, <%= ngo.longitude %>]).addTo(map).bindPopup("<%= ngo.restaurantName || 'NGO' %>");
+		});
+	</script>
+<% } %>
+
+

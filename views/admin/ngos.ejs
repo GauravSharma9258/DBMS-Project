@@ -1,0 +1,66 @@
+<main>
+	<%- include('../partials/adminSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+			<div>
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme d-inline-block">NGOs</h5>
+			</div>
+			<div class="d-flex gap-2">
+				<span class="badge bg-warning text-dark">Pending: <%= stats.pending %></span>
+				<span class="badge bg-success">Approved: <%= stats.approved %></span>
+				<span class="badge bg-danger">Rejected: <%= stats.rejected %></span>
+			</div>
+		</div>
+		
+		<div class="col col-12 m-auto my-4">
+			<div class="table-responsive bg-white shadow-sm rounded">
+				<table class="table table-hover align-middle m-0">
+					<thead class="table-light">
+						<tr>
+							<th scope="col">NGO</th>
+							<th scope="col">Contact</th>
+							<th scope="col">Submitted on</th>
+							<th scope="col">Status</th>
+							<th scope="col">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% if (ngos.length === 0) { %>
+							<tr>
+								<td colspan="5" class="text-center py-4 text-muted">No NGOs found.</td>
+							</tr>
+						<% } else { %>
+							<% ngos.forEach((ngo) => { %>
+								<tr>
+									<td>
+										<div class="fw-semibold"><%= ngo.restaurantName || 'N/A' %></div>
+										<small class="text-muted"><%= ngo.restaurantAddress || '—' %></small>
+									</td>
+									<td>
+										<div><%= ngo.ownerName || (ngo.firstName + ' ' + ngo.lastName) %></div>
+										<small class="text-muted"><%= ngo.email %></small>
+									</td>
+									<td><%= ngo.joinedTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></td>
+									<td>
+										<span class="badge <%= ngo.verificationStatus === 'approved' ? 'bg-success' : ngo.verificationStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark' %>">
+											<%= ngo.verificationStatus %>
+										</span>
+									</td>
+									<td>
+										<a href="/admin/ngos/<%= ngo._id %>" class="btn btn-sm btn-outline-primary">Review</a>
+									</td>
+								</tr>
+							<% }) %>
+						<% } %>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
+	</div>
+</main>
+
+

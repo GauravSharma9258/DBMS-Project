@@ -1,0 +1,127 @@
+<main>
+	<%- include('../partials/adminSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+			<div>
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme d-inline-block">Restaurant Review</h5>
+			</div>
+			<a href="/admin/restaurants" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back to list</a>
+		</div>
+
+		<div class="col col-12 col-lg-10 m-auto my-4">
+			<div class="row g-4">
+				<div class="col-lg-8">
+					<div class="card shadow-sm border-0">
+						<div class="card-body">
+							<h4 class="card-title mb-0"><%= restaurant.restaurantName || 'Restaurant' %></h4>
+							<p class="text-muted mb-3"><%= restaurant.restaurantAddress || 'Address not provided' %></p>
+							
+							<div class="mb-3">
+								<strong>Owner:</strong> <%= restaurant.ownerName || restaurant.firstName + ' ' + restaurant.lastName %><br>
+								<strong>Email:</strong> <%= restaurant.email %><br>
+								<strong>Phone:</strong> <%= restaurant.restaurantPhone || restaurant.phone || 'N/A' %><br>
+								<strong>License #:</strong> <%= restaurant.licenseNumber || 'N/A' %>
+							</div>
+
+							<% if (restaurant.licenseImagePath) { %>
+								<div class="mb-3">
+									<h6>License document</h6>
+									<img src="<%= restaurant.licenseImagePath %>" alt="License" class="img-fluid rounded border" style="max-height: 260px; object-fit: contain;">
+								</div>
+							<% } %>
+
+							<% if (restaurant.restaurantPhotos && restaurant.restaurantPhotos.length) { %>
+								<div class="mb-3">
+									<h6>Restaurant photos</h6>
+									<div class="d-flex flex-wrap gap-2">
+										<% restaurant.restaurantPhotos.forEach(photo => { %>
+											<img src="<%= photo %>" alt="Restaurant photo" class="rounded border" style="width: 140px; height: 100px; object-fit: cover;">
+										<% }) %>
+									</div>
+								</div>
+							<% } %>
+
+							<% if (restaurant.latitude && restaurant.longitude) { %>
+								<div class="mb-3">
+									<h6>Map location</h6>
+									<div id="restaurant-map"></div>
+								</div>
+							<% } %>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<div class="card shadow-sm border-0">
+						<div class="card-body">
+							<h5>Verification</h5>
+							<p>
+								Current status:
+								<span class="badge <%= restaurant.verificationStatus === 'approved' ? 'bg-success' : restaurant.verificationStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark' %>">
+									<%= restaurant.verificationStatus %>
+								</span>
+							</p>
+
+							<% if (restaurant.verificationNotes) { %>
+								<div class="alert alert-info">
+									<strong>Notes:</strong>
+									<p class="mb-0"><%= restaurant.verificationNotes %></p>
+								</div>
+							<% } %>
+
+							<form action="/admin/restaurants/<%= restaurant._id %>/verify" method="POST" class="mb-3">
+								<input type="hidden" name="status" value="approved">
+								<div class="mb-3">
+									<label for="approve-notes" class="form-label">Message to restaurant (optional)</label>
+									<textarea name="notes" id="approve-notes" class="form-control" rows="2" placeholder="Optional note to include with approval"></textarea>
+								</div>
+								<button type="submit" class="btn btn-success w-100">Approve</button>
+							</form>
+
+							<form action="/admin/restaurants/<%= restaurant._id %>/verify" method="POST">
+								<input type="hidden" name="status" value="rejected">
+								<div class="mb-3">
+									<label for="reject-notes" class="form-label">Reason for rejection</label>
+									<textarea name="notes" id="reject-notes" class="form-control" rows="3" placeholder="Explain why verification failed" required></textarea>
+								</div>
+								<button type="submit" class="btn btn-outline-danger w-100">Reject</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</main>
+
+<% if (restaurant.latitude && restaurant.longitude) { %>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	<style>
+		#restaurant-map {
+			width: 100%;
+			height: 280px;
+			border-radius: 10px;
+			border: 1px solid #e0e0e0;
+		}
+	</style>
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const map = L.map("restaurant-map", {
+				minZoom: 4,
+				maxZoom: 18
+			}).setView([<%= restaurant.latitude %>, <%= restaurant.longitude %>], 14);
+
+			L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(map);
+
+			L.marker([<%= restaurant.latitude %>, <%= restaurant.longitude %>]).addTo(map).bindPopup("<%= restaurant.restaurantName || 'Restaurant' %>");
+		});
+	</script>
+<% } %>
+

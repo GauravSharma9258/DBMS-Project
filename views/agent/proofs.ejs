@@ -1,0 +1,74 @@
+<main>
+	<%- include('../partials/agentSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div class="d-flex align-items-center gap-2">
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme">Photo Proofs</h5>
+			</div>
+			<small class="text-muted">Share distribution photos within a few hours to keep donors informed.</small>
+		</div>
+
+		<div class="m-4">
+			<div class="row gy-4">
+				<div class="col-lg-6">
+					<div class="sp-card">
+						<h5 class="mb-3">Pending proofs</h5>
+						<% if(!pendingProofs.length) { %>
+							<p class="text-muted m-0">All caught up! No pending proofs.</p>
+						<% } else { %>
+							<% pendingProofs.forEach(donation => { %>
+								<div class="border rounded p-3 mb-3">
+									<div class="fw-semibold mb-1"><%= donation.donor.firstName + " " + donation.donor.lastName %></div>
+									<small class="text-muted d-block">Collected on <%= donation.collectionTime ? donation.collectionTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) : "Not recorded" %></small>
+									<p class="mt-2 mb-3">Upload photos to show how the meal was distributed.</p>
+
+									<form action="/agent/collection/uploadProof/<%= donation._id %>" method="POST" enctype="multipart/form-data">
+										<div class="sp-upload-zone mb-3">
+											<input type="file" class="form-control" name="proofPhotos" accept="image/*" multiple>
+											<small class="text-muted d-block mt-2">Add up to 4 photos</small>
+										</div>
+										<div class="mb-3">
+											<label class="form-label">Notes (optional)</label>
+											<textarea name="proofNotes" class="form-control" rows="2" placeholder="Tell donors where the meal was served"></textarea>
+										</div>
+										<button type="submit" class="btn btn-sm">Upload proof</button>
+										<a href="/agent/collection/view/<%= donation._id %>" class="btn btn-outline-primary btn-sm">View donation</a>
+									</form>
+								</div>
+							<% }) %>
+						<% } %>
+					</div>
+				</div>
+
+				<div class="col-lg-6">
+					<div class="sp-card">
+						<h5 class="mb-3">Submitted proofs</h5>
+						<% if(!submittedProofs.length) { %>
+							<p class="text-muted m-0">Photos you submit will appear here.</p>
+						<% } else { %>
+							<% submittedProofs.forEach(donation => { %>
+								<div class="border rounded p-3 mb-3">
+									<div class="fw-semibold"><%= donation.donor.firstName + " " + donation.donor.lastName %></div>
+									<small class="text-muted">Uploaded <%= donation.collectionTime ? donation.collectionTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) : "" %></small>
+									<div class="d-flex flex-wrap gap-2 mt-3 proof-gallery">
+										<% donation.proofs.forEach(photo => { %>
+											<a href="<%= photo %>" target="_blank"><img src="<%= photo %>" alt="Proof photo"></a>
+										<% }) %>
+									</div>
+									<% if(donation.proofNotes) { %>
+										<small class="d-block text-muted mt-2"><%= donation.proofNotes %></small>
+									<% } %>
+									<a href="/agent/collection/view/<%= donation._id %>#proof-section" class="btn btn-outline-primary btn-sm mt-3">Update proof</a>
+								</div>
+							<% }) %>
+						<% } %>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+

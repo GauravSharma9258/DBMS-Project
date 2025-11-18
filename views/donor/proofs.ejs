@@ -1,0 +1,69 @@
+<main>
+	<%- include('../partials/donorSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div class="d-flex align-items-center gap-2">
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme">Donation Photos</h5>
+			</div>
+			<small class="text-muted">Update or add pictures so NGOs know exactly what they’re collecting.</small>
+		</div>
+
+		<div class="m-4">
+			<% if(!donations.length) { %>
+				<div class="sp-card text-center">
+					<p class="mb-2 fw-semibold">No donations yet</p>
+					<p class="text-muted">As you create donations, you can manage their photos here.</p>
+					<a href="/donor/donate" class="btn mt-2">Donate now</a>
+				</div>
+			<% } %>
+
+			<div class="row gy-4">
+				<% donations.forEach(donation => { %>
+					<div class="col-12">
+						<div class="sp-card">
+							<div class="d-flex justify-content-between flex-wrap gap-2">
+								<div>
+									<h6 class="mb-1"><%= donation.foodType %></h6>
+									<small class="text-muted">Created <%= donation.createdAt.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></small>
+								</div>
+								<div>
+									<span class="badge sp-pill px-3 py-1" style="background-color: rgba(255,122,61,0.1); color: var(--sp-primary);">
+										<%= donation.status.replace("_"," ") %>
+									</span>
+								</div>
+							</div>
+
+							<div class="mt-3">
+								<div class="fw-semibold mb-2">Current photos</div>
+								<% if(donation.donationPhotos && donation.donationPhotos.length) { %>
+									<div class="d-flex flex-wrap gap-2 proof-gallery">
+										<% donation.donationPhotos.forEach(photo => { %>
+											<a href="<%= photo %>" target="_blank"><img src="<%= photo %>" alt="Donation photo"></a>
+										<% }) %>
+									</div>
+								<% } else { %>
+									<p class="text-muted mb-0">No photos uploaded yet.</p>
+								<% } %>
+							</div>
+
+							<hr>
+							<form action="/donor/donation/addPhotos/<%= donation._id %>" method="POST" enctype="multipart/form-data" class="mt-2">
+								<div class="sp-upload-zone mb-3">
+									<label class="form-label d-block mb-2">Add more photos (up to 4 at a time)</label>
+									<input type="file" class="form-control" name="donationPhotos" accept="image/*" multiple>
+									<small class="text-muted d-block mt-2">Show packaging, meal labels, or current condition.</small>
+								</div>
+								<button type="submit" class="btn btn-sm">Upload photos</button>
+							</form>
+						</div>
+					</div>
+				<% }) %>
+			</div>
+		</div>
+		
+	</div>
+</main>
+

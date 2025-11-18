@@ -1,6 +1,6 @@
 <div class="m-0 pt-5 w-100 bg-img-1">
-	<form action="/auth/signup" method="POST" class="w-50 bg-white p-5 m-auto" style="min-width: 320px;">
-		<h3 class="text-center mb-3">User Signup</h3>
+	<form action="/auth/signup" method="POST" enctype="multipart/form-data" class="w-75 bg-white p-5 m-auto" style="min-width: 320px; max-width: 960px;">
+		<h3 class="text-center mb-3">Create your account</h3>
 
 		<% if(typeof errors != 'undefined') { %>
 			<% errors.forEach(function(error) { %>
@@ -11,48 +11,247 @@
 			<% }); %>
 		<% } %>
 		
-		<div class="mb-3">
+		<% const selectedRole = typeof role !== 'undefined' ? role : 'donor'; %>
+		<div class="row g-3">
+			<div class="col-md-6">
 			<label for="first-name" class="form-label">First name</label>
-			<input type="text" name="firstName" class="form-control" id="first-name" placeholder="Enter first name.." value="<%= typeof firstName != 'undefined' ? firstName : '' %>" required autofocus>
+				<input type="text" name="firstName" class="form-control" id="first-name" placeholder="Enter first name" value="<%= typeof firstName != 'undefined' ? firstName : '' %>" required autofocus>
 		</div>
 		
-		<div class="mb-3">
+			<div class="col-md-6">
 			<label for="last-name" class="form-label">Last name</label>
-			<input type="text" name="lastName" class="form-control" id="last-name" placeholder="Enter last name.." value="<%= typeof lastName != 'undefined' ? lastName : '' %>" required>
+				<input type="text" name="lastName" class="form-control" id="last-name" placeholder="Enter last name" value="<%= typeof lastName != 'undefined' ? lastName : '' %>" required>
 		</div>
 		
-		<div class="mb-3">
+			<div class="col-md-6">
 			<label for="email" class="form-label">Email address</label>
-			<input type="email" name="email" class="form-control" id="email" placeholder="Enter email.." value="<%= typeof email != 'undefined' ? email : '' %>" required>
+				<input type="email" name="email" class="form-control" id="email" placeholder="Enter email" value="<%= typeof email != 'undefined' ? email : '' %>" required>
 			<div class="form-text">We'll never share your email with anyone else.</div>
 		</div>
 		
-		<div class="mb-3">
+			<div class="col-md-6">
+				<label for="phone" class="form-label">Contact phone</label>
+				<input type="tel" name="phone" class="form-control" id="phone" placeholder="Enter phone number" value="<%= typeof phone != 'undefined' ? phone : '' %>">
+			</div>
+			
+			<div class="col-md-6">
 			<label for="password1" class="form-label">Password</label>
-			<input type="password" name="password1" class="form-control" id="password1" placeholder="Enter password.." value="<%= typeof password1 != 'undefined' ? password1 : '' %>" required>
+				<input type="password" name="password1" class="form-control" id="password1" placeholder="Enter password" value="<%= typeof password1 != 'undefined' ? password1 : '' %>" required>
 		</div>
 
-		<div class="mb-3">
+			<div class="col-md-6">
 			<label for="password2" class="form-label">Confirm Password</label>
-			<input type="password" name="password2" class="form-control" id="password2" placeholder="Re-enter password.." value="<%= typeof password2 != 'undefined' ? password2 : '' %>" required>
+				<input type="password" name="password2" class="form-control" id="password2" placeholder="Re-enter password" value="<%= typeof password2 != 'undefined' ? password2 : '' %>" required>
 		</div>
 		
-		<div class="mb-3">
+			<div class="col-md-6">
 			<label for="role" class="form-label">Signup as</label>
 			<select class="form-select" name="role" id="role">
-				<option value="donor">Donor</option>
-				<option value="agent">Agent</option>
-				<option value="admin">Admin</option>
+					<option value="donor" <%= selectedRole === 'donor' ? 'selected' : '' %>>Restaurant donor</option>
+					<option value="agent" <%= selectedRole === 'agent' ? 'selected' : '' %>>Agent</option>
+					<option value="admin" <%= selectedRole === 'admin' ? 'selected' : '' %>>Admin</option>
 			</select>
+			</div>
+		</div>
+
+		<div id="donor-section" class="<%= (selectedRole === 'donor' || selectedRole === 'agent') ? '' : 'd-none' %>">
+			<hr class="my-4">
+			<h4 class="mb-3" id="org-section-heading" data-donor-text="Restaurant details" data-agent-text="NGO details"><%= selectedRole === 'agent' ? 'NGO details' : 'Restaurant details' %></h4>
+
+			<div class="row g-3">
+				<div class="col-md-6">
+					<label for="ownerName" class="form-label">Owner / authorized person</label>
+					<input type="text" name="ownerName" class="form-control" id="ownerName" placeholder="Owner name" value="<%= typeof ownerName != 'undefined' ? ownerName : '' %>">
+				</div>
+
+				<div class="col-md-6">
+					<label for "restaurantName" class="form-label role-sensitive" data-donor-text="Restaurant name" data-agent-text="NGO name"><%= selectedRole === 'agent' ? 'NGO name' : 'Restaurant name' %></label>
+					<input type="text" name="restaurantName" class="form-control role-sensitive-input" id="restaurantName" data-donor-placeholder="Restaurant name" data-agent-placeholder="NGO name" placeholder="<%= selectedRole === 'agent' ? 'NGO name' : 'Restaurant name' %>" value="<%= typeof restaurantName != 'undefined' ? restaurantName : '' %>">
+				</div>
+
+				<div class="col-md-6">
+					<label for="restaurantPhone" class="form-label role-sensitive" data-donor-text="Restaurant phone" data-agent-text="NGO phone"><%= selectedRole === 'agent' ? 'NGO phone' : 'Restaurant phone' %></label>
+					<input type="tel" name="restaurantPhone" class="form-control role-sensitive-input" id="restaurantPhone" data-donor-placeholder="Restaurant contact number" data-agent-placeholder="NGO contact number" placeholder="<%= selectedRole === 'agent' ? 'NGO contact number' : 'Restaurant contact number' %>" value="<%= typeof restaurantPhone != 'undefined' ? restaurantPhone : (typeof phone != 'undefined' ? phone : '') %>">
+				</div>
+
+				<div class="col-md-6">
+					<label for="licenseNumber" class="form-label role-sensitive" data-donor-text="License / FSSAI number" data-agent-text="NGO registration / license number"><%= selectedRole === 'agent' ? 'NGO registration / license number' : 'License / FSSAI number' %></label>
+					<input type="text" name="licenseNumber" class="form-control role-sensitive-input" id="licenseNumber" data-donor-placeholder="License number" data-agent-placeholder="Registration / license number" placeholder="<%= selectedRole === 'agent' ? 'Registration / license number' : 'License number' %>" value="<%= typeof licenseNumber != 'undefined' ? licenseNumber : '' %>">
+				</div>
+
+				<div class="col-12">
+					<label for="restaurantAddress" class="form-label role-sensitive" data-donor-text="Restaurant full address" data-agent-text="NGO full address"><%= selectedRole === 'agent' ? 'NGO full address' : 'Restaurant full address' %></label>
+					<textarea name="restaurantAddress" class="form-control" id="restaurantAddress" rows="2" placeholder="Street, area, city"><%= typeof restaurantAddress != 'undefined' ? restaurantAddress : '' %></textarea>
+				</div>
+
+				<div class="col-12">
+					<label class="form-label role-sensitive" id="location-label" data-donor-text="Restaurant location in India" data-agent-text="NGO location in India"><%= selectedRole === 'agent' ? 'NGO location in India' : 'Restaurant location in India' %></label>
+					<div id="signup-map" class="mb-2"></div>
+					<div class="d-flex flex-wrap gap-2 align-items-center">
+						<small class="text-muted flex-grow-1">Drop a pin to mark your exact location, or use your current location if you are at the restaurant.</small>
+						<button type="button" class="btn btn-sm btn-outline-primary" id="signup-locate-btn">
+							<i class="fas fa-crosshairs me-1"></i>Use my location
+						</button>
+					</div>
+					<input type="hidden" name="latitude" id="signup-lat" value="<%= typeof latitude != 'undefined' ? latitude : '' %>">
+					<input type="hidden" name="longitude" id="signup-lng" value="<%= typeof longitude != 'undefined' ? longitude : '' %>">
+					<small class="text-success d-none" id="signup-coords-display"></small>
+				</div>
+
+				<div class="col-md-6">
+					<label for="restaurantLicense" class="form-label role-sensitive" data-donor-text="Upload restaurant license (JPEG/PNG, max 5MB)" data-agent-text="Upload NGO registration (JPEG/PNG, max 5MB)"><%= selectedRole === 'agent' ? 'Upload NGO registration (JPEG/PNG, max 5MB)' : 'Upload restaurant license (JPEG/PNG, max 5MB)' %></label>
+					<input type="file" name="restaurantLicense" id="restaurantLicense" class="form-control" accept="image/*">
+				</div>
+
+				<div class="col-md-6">
+					<label for="restaurantPhotos" class="form-label role-sensitive" data-donor-text="Upload restaurant photos (up to 5)" data-agent-text="Upload NGO photos (up to 5)"><%= selectedRole === 'agent' ? 'Upload NGO photos (up to 5)' : 'Upload restaurant photos (up to 5)' %></label>
+					<input type="file" name="restaurantPhotos" id="restaurantPhotos" class="form-control" accept="image/*" multiple>
+					<small class="text-muted role-sensitive" id="photos-help" data-donor-text="Kitchen, dining area, facade etc." data-agent-text="Facilities, activities, premises, etc."><%= selectedRole === 'agent' ? 'Facilities, activities, premises, etc.' : 'Kitchen, dining area, facade etc.' %></small>
+				</div>
+			</div>
 		</div>
 		
 		<button type="submit" class="btn d-block m-auto mt-4">Submit</button>
 		
 		
-		<div class="mt-3">
+		<div class="mt-3 text-center">
 			<span>Already have an account?</span>
 			<a href="/auth/login">Login here</a>
 		</div>
 		
 	</form>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+	#signup-map {
+		width: 100%;
+		height: 320px;
+		border-radius: 8px;
+		border: 1px solid #e0e0e0;
+	}
+</style>
+
+<script>
+	const roleSelect = document.getElementById("role");
+	const donorSection = document.getElementById("donor-section");
+	const indiaBounds = [
+		[6.5546079, 68.1113787],
+		[37.084107, 97.395561]
+	];
+	let signupMap, signupMarker;
+
+	function shouldShowOrgSection() {
+		return roleSelect.value === "donor" || roleSelect.value === "agent";
+	}
+
+	function toggleDonorSection() {
+		const showSection = shouldShowOrgSection();
+		donorSection.classList.toggle("d-none", !showSection);
+		if (showSection) {
+			setTimeout(initSignupMap, 100);
+			applyRoleText();
+		}
+	}
+
+	function applyRoleText() {
+		const role = roleSelect.value === "agent" ? "agent" : "donor";
+		document.querySelectorAll(".role-sensitive").forEach(el => {
+			const text = el.dataset[`${role}Text`];
+			if (text) el.textContent = text;
+		});
+		document.querySelectorAll(".role-sensitive-input").forEach(el => {
+			const placeholder = el.dataset[`${role}Placeholder`];
+			if (placeholder) el.placeholder = placeholder;
+		});
+		const heading = document.getElementById("org-section-heading");
+		if (heading) {
+			const text = heading.dataset[`${role}Text`];
+			if (text) heading.textContent = text;
+		}
+	}
+
+	function initSignupMap() {
+		if (signupMap) {
+			signupMap.invalidateSize();
+			return;
+		}
+		signupMap = L.map("signup-map", {
+			minZoom: 4,
+			maxZoom: 18,
+			maxBounds: indiaBounds,
+			maxBoundsViscosity: 0.8
+		}).setView([20.5937, 78.9629], 5);
+	
+		L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(signupMap);
+	
+		const existingLat = parseFloat(document.getElementById("signup-lat").value);
+		const existingLng = parseFloat(document.getElementById("signup-lng").value);
+		if (!Number.isNaN(existingLat) && !Number.isNaN(existingLng)) {
+			setSignupMarker(existingLat, existingLng);
+			signupMap.setView([existingLat, existingLng], 13);
+		}
+	
+		signupMap.on("click", (e) => setSignupMarker(e.latlng.lat, e.latlng.lng));
+	}
+
+	function setSignupMarker(lat, lng) {
+		if (signupMarker) {
+			signupMarker.setLatLng([lat, lng]);
+		} else {
+			signupMarker = L.marker([lat, lng], { draggable: true }).addTo(signupMap);
+			signupMarker.on("dragend", (event) => {
+				const { lat, lng } = event.target.getLatLng();
+				updateSignupCoords(lat, lng);
+			});
+		}
+		updateSignupCoords(lat, lng);
+	}
+
+	function updateSignupCoords(lat, lng) {
+		document.getElementById("signup-lat").value = lat.toFixed(6);
+		document.getElementById("signup-lng").value = lng.toFixed(6);
+		const coordsDisplay = document.getElementById("signup-coords-display");
+		coordsDisplay.textContent = `Pinned at Latitude ${lat.toFixed(5)}, Longitude ${lng.toFixed(5)}`;
+		coordsDisplay.classList.remove("d-none");
+	}
+
+	document.getElementById("signup-locate-btn").addEventListener("click", () => {
+		if (!navigator.geolocation) {
+			alert("Geolocation is not supported by your browser.");
+			return;
+		}
+		navigator.geolocation.getCurrentPosition((position) => {
+			const { latitude, longitude } = position.coords;
+			if (!isInsideIndia(latitude, longitude)) {
+				alert("Detected location is outside India. Please drop the pin manually.");
+				return;
+			}
+			initSignupMap();
+			signupMap.setView([latitude, longitude], 14);
+			setSignupMarker(latitude, longitude);
+		}, () => {
+			alert("Unable to detect your location. Please allow permissions or place the marker manually.");
+		});
+	});
+
+	function isInsideIndia(lat, lng) {
+		return lat >= indiaBounds[0][0] && lat <= indiaBounds[1][0] &&
+			lng >= indiaBounds[0][1] && lng <= indiaBounds[1][1];
+	}
+
+	roleSelect.addEventListener("change", () => {
+		toggleDonorSection();
+		applyRoleText();
+	});
+	document.addEventListener("DOMContentLoaded", () => {
+		if (shouldShowOrgSection()) {
+			initSignupMap();
+		}
+		applyRoleText();
+	});
+</script>

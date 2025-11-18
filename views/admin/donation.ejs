@@ -28,6 +28,21 @@
 				<span>Time of cooking:</span>
 				<span><%= donation.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></span>
 			</div>
+
+			<div class="mb-2">
+				<span>Safe to eat until:</span>
+				<span><%= donation.expiryTime ? donation.expiryTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) : "Not provided" %></span>
+			</div>
+			<% if(donation.donationPhotos && donation.donationPhotos.length) { %>
+				<div class="mb-3">
+					<span>Donor photos:</span>
+					<div class="d-flex flex-wrap gap-2 proof-gallery mt-2">
+						<% donation.donationPhotos.forEach(photo => { %>
+							<a href="<%= photo %>" target="_blank"><img src="<%= photo %>" alt="Donation photo"></a>
+						<% }) %>
+					</div>
+				</div>
+			<% } %>
 			
 			<div class="mb-2">
 				<span>Address to collect:</span>
@@ -50,18 +65,65 @@
 				<span>Status:</span>
 				<span class="fw-bold text-<%= donation.status %>"><%= donation.status %></span>
 			</div>
-			
-			<% if(donation.status == "assigned") { %>
-				<div class="mb-2">
-					<span>Agent assigned:</span>
-					<span><%= donation.agent.firstName + " "  + donation.agent.lastName %></span>
+
+			<div class="mb-3">
+				<span>Nearest NGOs notified:</span>
+				<div class="table-responsive mt-2">
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th>NGO</th>
+								<th>Status</th>
+								<th>Distance (km)</th>
+								<th>Responded at</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% if(donation.candidateAgents && donation.candidateAgents.length) { %>
+								<% donation.candidateAgents.forEach(entry => { %>
+									<tr>
+										<td>
+											<% if(entry.agent && entry.agent.firstName) { %>
+												<%= entry.agent.restaurantName || (entry.agent.firstName + " " + entry.agent.lastName) %>
+											<% } else { %>
+												<span class="text-muted">Unknown</span>
+											<% } %>
+										</td>
+										<td class="text-capitalize"><%= entry.status %></td>
+										<td><%= entry.distanceKm || "—" %></td>
+										<td><%= entry.respondedAt ? entry.respondedAt.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) : "—" %></td>
+									</tr>
+								<% }) %>
+							<% } else { %>
+								<tr>
+									<td colspan="4" class="text-muted">Auto-assignment has not run yet.</td>
+								</tr>
+							<% } %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<% if(donation.proofs && donation.proofs.length) { %>
+				<div class="mb-3">
+					<span>NGO proof photos:</span>
+					<div class="d-flex flex-wrap gap-2 proof-gallery mt-2">
+						<% donation.proofs.forEach(photo => { %>
+							<a href="<%= photo %>" target="_blank"><img src="<%= photo %>" alt="Proof photo"></a>
+						<% }) %>
+					</div>
+					<% if(donation.proofNotes) { %>
+						<div class="alert alert-info mt-3 mb-0">
+							<strong>NGO note:</strong> <%= donation.proofNotes %>
+						</div>
+					<% } %>
 				</div>
 			<% } %>
 			
-			<% if(donation.status == "assigned" && donation.adminToAgentMsg != "") { %>
+			<% if(donation.status == "assigned" && donation.agent) { %>
 				<div class="mb-2">
-					<span>Your message to Agent:</span>
-					<div class="ms-3"><%= donation.adminToAgentMsg %></div>
+					<span>Agent assigned:</span>
+					<span><%= donation.agent.firstName + " "  + donation.agent.lastName %></span>
 				</div>
 			<% } %>
 			
@@ -73,14 +135,11 @@
 			<% } %>
 			
 			
-			<div class="mt-4">
-				<% if(donation.status == "pending") { %>
-					<a href="/admin/donation/accept/<%= donation._id %>" class="btn">Accept</a>
-					<a href="/admin/donation/reject/<%= donation._id %>" class="btn btn-danger">Reject</a>
-				<% } else if(donation.status == "accepted") { %>
-					<a href="/admin/donation/assign/<%= donation._id %>" class="btn">Assign agent</a>
-				<% } %>
-			</div>
+			<% if(donation.status !== "rejected" && donation.status !== "collected") { %>
+				<div class="mt-4">
+					<a href="/admin/donation/reject/<%= donation._id %>" class="btn btn-danger">Reject donation</a>
+				</div>
+			<% } %>
 			
 		</div>
 		

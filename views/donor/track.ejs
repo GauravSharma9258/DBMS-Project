@@ -1,0 +1,126 @@
+<main>
+	<%- include('../partials/donorSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div class="d-flex align-items-center gap-2">
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme">Track Donations</h5>
+			</div>
+			<div class="d-flex align-items-center gap-2 flex-wrap">
+				<small class="text-muted">Amazon-style timeline · live updates</small>
+				<form action="/donor/donations/clear" method="POST" onsubmit="return confirm('Clear all completed records?');">
+					<button type="submit" class="btn btn-outline-primary btn-sm">Clear past records</button>
+				</form>
+			</div>
+		</div>
+		
+		<div class="m-4">
+			<% if(!donations.length) { %>
+				<div class="sp-card text-center">
+					<p class="mb-2 fw-semibold">No donations to track yet.</p>
+					<p class="text-muted">Create a donation and watch it travel in real time.</p>
+					<a href="/donor/donate" class="btn mt-2">Create donation</a>
+				</div>
+			<% } %>
+			
+			<div class="row gy-4">
+				<% donations.forEach(donation => { %>
+					<div class="col-12">
+						<div class="sp-card">
+							<div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+								<div>
+									<h6 class="mb-1">Food: <%= donation.foodType %></h6>
+									<small class="text-muted">Quantity: <%= donation.quantity %></small>
+								</div>
+								<div class="text-end d-flex flex-column gap-2 align-items-end">
+									<span class="badge text-uppercase sp-pill px-3 py-1"
+										style="background-color: rgba(255,122,61,0.1); color: var(--sp-primary);">
+										<%= donation.status.replace("_"," ") %>
+									</span>
+									<% if(donation.proofs && donation.proofs.length) { %>
+										<span class="badge sp-pill px-3 py-1" style="background-color: rgba(39,199,168,0.15); color: var(--sp-secondary);">
+											<i class="fas fa-shield-check me-1"></i>Proof shared
+										</span>
+									<% } else if(donation.status === "collected") { %>
+										<span class="badge sp-pill px-3 py-1" style="background-color: rgba(243,166,35,0.18); color: #c78200;">
+											<i class="fas fa-hourglass-half me-1"></i>Proof pending
+										</span>
+									<% } %>
+								</div>
+							</div>
+							
+							<div class="tracking-steps">
+								<%
+									const steps = [
+										{ key: "pending", label: "Waiting for NGO", desc: "We notified nearby verified NGOs." },
+										{ key: "assigned", label: "NGO accepted", desc: donation.agent ? "Assigned to " + donation.agent.firstName : "NGO confirmed pickup" },
+										{ key: "picked_up", label: "Donor confirmed", desc: "You marked that the NGO arrived." },
+										{ key: "collected", label: "Delivered", desc: "NGO confirmed collection" }
+									];
+									const currentIndex = donation.status === "rejected" ? -1 : steps.findIndex(step => step.key === donation.status);
+								%>
+								<% steps.forEach((step, idx) => { %>
+									<div class="tracking-step <%= (donation.status === "collected" || idx <= currentIndex) ? "completed" : "" %>">
+										<div class="tracking-bullet"></div>
+										<div>
+											<div class="fw-semibold"><%= step.label %></div>
+											<small class="text-muted"><%= step.desc %></small>
+										</div>
+									</div>
+								<% }) %>
+							</div>
+
+							<div class="d-flex flex-wrap gap-3 mt-3">
+								<div class="sp-card sp-card-tight flex-grow-1" style="background-color:#FFF3E8;">
+									<div class="fw-semibold mb-1"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Pickup spot</div>
+									<small class="text-muted"><%= donation.address %></small>
+								</div>
+								<div class="sp-card sp-card-tight flex-grow-1" style="background-color:#E3FFF7;">
+									<div class="fw-semibold mb-1"><i class="fas fa-warehouse me-2 text-success"></i>NGO assigned</div>
+									<small class="text-muted"><%= donation.agent ? (donation.agent.restaurantName || (donation.agent.firstName + " " + donation.agent.lastName)) : "Awaiting confirmation" %></small>
+								</div>
+							</div>
+
+							<% if(donation.proofs && donation.proofs.length) { %>
+								<div class="mt-3">
+									<div class="fw-semibold mb-2"><i class="fas fa-images me-2 text-success"></i>Proof from NGO</div>
+									<div class="d-flex flex-wrap gap-2 proof-gallery">
+										<% donation.proofs.forEach(photo => { %>
+											<a href="<%= photo %>" target="_blank"><img src="<%= photo %>" alt="Proof"></a>
+										<% }) %>
+									</div>
+									<% if(donation.proofNotes) { %>
+										<small class="d-block text-muted mt-2"><%= donation.proofNotes %></small>
+									<% } %>
+								</div>
+							<% } else if(donation.status === "collected") { %>
+								<div class="alert alert-warning mt-3 mb-0">
+									<i class="fas fa-info-circle me-2"></i>The NGO has not uploaded photos yet. You will see them here once shared.
+								</div>
+							<% } %>
+
+							<% if(donation.status === "assigned") { %>
+								<form action="/donor/donation/confirmPickup/<%= donation._id %>" method="POST" class="mt-3">
+									<button type="submit" class="btn btn-outline-primary">Mark as NGO picked up</button>
+									<small class="text-muted d-block mt-1">Confirm once the volunteer arrives to collect food.</small>
+								</form>
+							<% } else if(donation.status === "picked_up") { %>
+								<div class="alert alert-info mt-3 mb-0">
+									<i class="fas fa-check-circle me-2 text-success"></i>Thanks for confirming. The NGO will update once delivered.
+								</div>
+							<% } else if(donation.status === "rejected") { %>
+								<div class="alert alert-danger mt-3 mb-0">
+									This donation was rejected. Please create a new request with updated details.
+								</div>
+							<% } %>
+						</div>
+					</div>
+				<% }) %>
+			</div>
+		</div>
+		
+	</div>
+</main>
+

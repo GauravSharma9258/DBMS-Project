@@ -9,6 +9,11 @@
 		</div>
 		
 		<div class="col col-sm-10 col-12 m-auto my-4" style="max-height: 75%; overflow: auto;">
+			<div class="d-flex justify-content-end mb-2">
+				<form action="/agent/collections/clear" method="POST" onsubmit="return confirm('Clear your previous collection records?');">
+					<button type="submit" class="btn btn-outline-primary btn-sm">Clear records</button>
+				</form>
+			</div>
 			<table class="table table-info table-striped table-hover m-0 bg-white">
 				<thead>
 					<tr>

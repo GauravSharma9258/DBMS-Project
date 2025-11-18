@@ -1,0 +1,87 @@
+<main>
+	<%- include('../partials/agentSidebar') %>
+	
+	<div id="main-wrapper">
+		
+		<div class="bg-white shadow-sm p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div class="d-flex align-items-center gap-2">
+				<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+				<h5 class="m-0 color-theme">Live Tracking</h5>
+			</div>
+			<small class="text-muted">Monitor your pickups in real time.</small>
+		</div>
+
+		<div class="m-4">
+			<% if(!donations.length) { %>
+				<div class="sp-card text-center">
+					<p class="mb-2 fw-semibold">No active pickups.</p>
+					<p class="text-muted">Accept invitations to start tracking routes.</p>
+				</div>
+			<% } %>
+
+			<div class="row gy-4">
+				<% donations.forEach(donation => { %>
+					<div class="col-12">
+						<div class="sp-card">
+							<div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+								<div>
+									<h6 class="mb-1">Donor: <%= donation.donor.firstName + " " + donation.donor.lastName %></h6>
+									<small class="text-muted"><%= donation.address %></small>
+								</div>
+								<span class="badge sp-pill px-3 py-1 text-uppercase" style="background-color: rgba(39,199,168,0.15); color: var(--sp-secondary);">
+									<%= donation.status.replace("_"," ") %>
+								</span>
+							</div>
+
+							<div class="tracking-steps">
+								<%
+									const steps = [
+										{ key: "assigned", label: "You accepted", desc: "Head to the donor" },
+										{ key: "picked_up", label: "Donor confirmed pickup", desc: "Food is with you" },
+										{ key: "collected", label: "Delivered", desc: "Marked as collected" }
+									];
+									let currentIndex = steps.findIndex(step => step.key === donation.status);
+									if (donation.status === "assigned") currentIndex = 0;
+									if (donation.status === "picked_up") currentIndex = 1;
+									if (donation.status === "collected") currentIndex = 2;
+								%>
+								<% steps.forEach((step, idx) => { %>
+									<div class="tracking-step <%= idx <= currentIndex ? 'completed' : '' %>">
+										<div class="tracking-bullet"></div>
+										<div>
+											<div class="fw-semibold"><%= step.label %></div>
+											<small class="text-muted"><%= step.desc %></small>
+										</div>
+									</div>
+								<% }) %>
+							</div>
+
+							<div class="d-flex flex-wrap gap-3 mt-3">
+								<div class="sp-card sp-card-tight flex-grow-1" style="background-color:#FFF3E8;">
+									<div class="fw-semibold mb-1"><i class="fas fa-map-pin me-2 text-danger"></i>Pickup</div>
+									<small class="text-muted"><%= donation.address %></small>
+								</div>
+								<div class="sp-card sp-card-tight flex-grow-1" style="background-color:#E3FFF7;">
+									<div class="fw-semibold mb-1"><i class="fas fa-clock me-2 text-success"></i>Cooking time</div>
+									<small class="text-muted"><%= donation.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></small>
+								</div>
+							</div>
+
+							<div class="mt-3 d-flex gap-2 flex-wrap">
+								<a href="/agent/collection/view/<%= donation._id %>" class="btn btn-outline-primary btn-sm">View details</a>
+								<% if(donation.status === "assigned" || donation.status === "picked_up") { %>
+									<a href="/agent/collection/collect/<%= donation._id %>" class="btn btn-success btn-sm">Mark collected</a>
+									<a href="/agent/collection/view/<%= donation._id %>#proof-section" class="btn btn-outline-primary btn-sm">Upload proof</a>
+								<% } else if(donation.status === "collected") { %>
+									<a href="/agent/collection/view/<%= donation._id %>" class="btn btn-outline-primary btn-sm">View proof</a>
+								<% } %>
+							</div>
+						</div>
+					</div>
+				<% }) %>
+			</div>
+		</div>
+
+	</div>
+</main>
+

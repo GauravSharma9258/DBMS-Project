@@ -7,7 +7,7 @@
 			<h5 class="m-0 color-theme d-inline-block">Donate</h5>
 		</div>
 		
-		<form action="/donor/donate" method="POST" class="border m-4 my-3 p-4 bg-white rounded-2 shadow">
+		<form action="/donor/donate" method="POST" class="border m-4 my-3 p-4 bg-white rounded-2 shadow" id="donation-form">
 			<div class="mb-4">
 				<label for="food" class="form-label">Food type</label>
 				<input type="text" name="donation[foodType]" class="form-control" id="food" placeholder="Enter food.." required autofocus>
@@ -23,17 +23,45 @@
 					<label for="time" class="form-label">Time of cooking</label>
 					<input type="datetime-local" name="donation[cookingTime]" class="form-date-input" id="time" required>
 				</div>
+
+				<div class="mb-4 col-sm-6">
+					<label for="expiry" class="form-label">Safe to eat until</label>
+					<input type="datetime-local" name="donation[expiryTime]" class="form-date-input" id="expiry" required>
+					<small class="text-muted">After this time the NGO will not deliver the meal.</small>
+				</div>
 			</div>
 			
 			<div class="row">
 				<div class="mb-4 col-sm-8">
 					<label for="address" class="form-label">Address to collect</label>
-					<input type="text" name="donation[address]" class="form-control" id="address" placeholder="Enter address.." value="<%= currentUser.address %>" required>
+					<input type="text" name="donation[address]" class="form-control" id="address" placeholder="Enter address.." value="<%= currentUser.restaurantAddress || currentUser.address %>" required>
 				</div>
 				
 				<div class="mb-4 col-sm-4">
 					<label for="phone" class="form-label">Phone</label>
-					<input type="number" name="donation[phone]" class="form-control" id="phone" placeholder="Enter phone.." value="<%= currentUser.phone %>" required>
+					<input type="number" name="donation[phone]" class="form-control" id="phone" placeholder="Enter phone.." value="<%= currentUser.restaurantPhone || currentUser.phone %>" required>
+				</div>
+			</div>
+			
+			<div class="mb-4">
+				<label class="form-label">Pin pickup location (within India)</label>
+				<div id="donor-map" class="mb-2"></div>
+				<div class="d-flex flex-wrap gap-2 align-items-center">
+					<small class="text-muted flex-grow-1">Click on the map to drop a pin. This helps receivers navigate directly to you.</small>
+					<button type="button" class="btn btn-sm btn-outline-primary" id="locate-btn">
+						<i class="fas fa-crosshairs me-1"></i>Use my location
+					</button>
+				</div>
+				<input type="hidden" name="donation[latitude]" id="latitude" required>
+				<input type="hidden" name="donation[longitude]" id="longitude" required>
+				<small class="text-success d-none" id="coords-display"></small>
+			</div>
+
+			<div class="mb-4">
+				<label class="form-label">Upload meal photos (optional, up to 4)</label>
+				<div class="sp-upload-zone">
+					<input type="file" name="donationPhotos" id="donationPhotos" class="form-control" accept="image/*" multiple>
+					<small class="text-muted d-block mt-2">Add clear photos of the meal, packing, and labels so NGOs know what to expect.</small>
 				</div>
 			</div>
 			
@@ -48,8 +76,110 @@
 	</div>
 </main>
 
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+	#donor-map {
+		width: 100%;
+		height: 320px;
+		border-radius: 8px;
+		border: 1px solid #e0e0e0;
+	}
+</style>
+
 <script>
 	const d = new Date();
 	const dateString = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "T" + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
 	document.getElementById("time").value = dateString;
+	const expiryDate = new Date(d.getTime() + 4 * 60 * 60 * 1000);
+	const expiryString = expiryDate.getFullYear() + "-" + ("0"+(expiryDate.getMonth()+1)).slice(-2) + "-" + ("0" + expiryDate.getDate()).slice(-2) + "T" + ("0" + expiryDate.getHours()).slice(-2) + ":" + ("0" + expiryDate.getMinutes()).slice(-2);
+	document.getElementById("expiry").value = expiryString;
+
+	const defaultLat = <%- (currentUser && typeof currentUser.latitude === 'number') ? currentUser.latitude : 'null' %>;
+	const defaultLng = <%- (currentUser && typeof currentUser.longitude === 'number') ? currentUser.longitude : 'null' %>;
+	const indiaBounds = [
+		[6.5546079, 68.1113787],  // Southwest (Kanyakumari-ish)
+		[37.084107, 97.395561]    // Northeast
+	];
+
+	let map, marker;
+
+	function initMap() {
+		map = L.map('donor-map', {
+			minZoom: 4,
+			maxZoom: 18,
+			maxBounds: indiaBounds,
+			maxBoundsViscosity: 0.8
+		}).setView([20.5937, 78.9629], 5);
+
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+
+		if (defaultLat !== null && defaultLng !== null) {
+			setMarker(defaultLat, defaultLng);
+			map.setView([defaultLat, defaultLng], 13);
+		}
+
+		map.on('click', function (e) {
+			setMarker(e.latlng.lat, e.latlng.lng);
+		});
+	}
+
+	function setMarker(lat, lng) {
+		if (marker) {
+			marker.setLatLng([lat, lng]);
+		} else {
+			marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+			marker.on('dragend', function (event) {
+				const { lat, lng } = event.target.getLatLng();
+				updateCoords(lat, lng);
+			});
+		}
+		updateCoords(lat, lng);
+	}
+
+	function updateCoords(lat, lng) {
+		document.getElementById('latitude').value = lat.toFixed(6);
+		document.getElementById('longitude').value = lng.toFixed(6);
+		const coordsDisplay = document.getElementById('coords-display');
+		coordsDisplay.textContent = `Pinned at Latitude ${lat.toFixed(5)}, Longitude ${lng.toFixed(5)}`;
+		coordsDisplay.classList.remove('d-none');
+	}
+
+	document.getElementById('locate-btn').addEventListener('click', () => {
+		if (!navigator.geolocation) {
+			alert("Geolocation is not supported by your browser.");
+			return;
+		}
+		navigator.geolocation.getCurrentPosition((position) => {
+			const { latitude, longitude } = position.coords;
+			if (!isInsideIndia(latitude, longitude)) {
+				alert("Detected location is outside India. Please pick a point within India manually.");
+				return;
+			}
+			map.setView([latitude, longitude], 13);
+			setMarker(latitude, longitude);
+		}, () => {
+			alert("Unable to retrieve your location. Please allow location permissions or place the marker manually.");
+		});
+	});
+
+	function isInsideIndia(lat, lng) {
+		return lat >= indiaBounds[0][0] && lat <= indiaBounds[1][0] &&
+			lng >= indiaBounds[0][1] && lng <= indiaBounds[1][1];
+	}
+
+	document.getElementById('donation-form').addEventListener('submit', function (e) {
+		const lat = document.getElementById('latitude').value;
+		const lng = document.getElementById('longitude').value;
+		if (!lat || !lng) {
+			e.preventDefault();
+			alert("Please drop a pin on the map to share the collection point.");
+		}
+	});
+
+	document.addEventListener('DOMContentLoaded', initMap);
 </script>
